@@ -16,6 +16,7 @@ import {
   Hash,
 } from 'lucide-react';
 import { GlobalMouseTracker } from '../useMousePosition';
+import TerminalFeed from '../components/TerminalFeed';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
 
@@ -125,6 +126,7 @@ const DashboardPage = () => {
   const [error, setError] = useState(null);
   const [dragging, setDragging] = useState(false);
   const [proofsOpen, setProofsOpen] = useState(false);
+  const [terminalFinished, setTerminalFinished] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleFileSelect = useCallback((selectedFile) => {
@@ -175,6 +177,7 @@ const DashboardPage = () => {
     setResult(null);
     setError(null);
     setProofsOpen(false);
+    setTerminalFinished(false);
 
     try {
       const formData = new FormData();
@@ -341,32 +344,26 @@ const DashboardPage = () => {
             </button>
           </div>
 
-          {/* Loading shimmer */}
-          {loading && (
-            <div className="search-loader" style={{ marginTop: '1.5rem' }}>
-              <div className="search-loader-spinner" aria-hidden="true" />
-              <div>
-                <div className="search-loader-title">Running via Telegraph Subnets</div>
-                <div className="search-loader-subtitle">
-                  Scanning text with ItsAI &amp; images with BitMind...
-                </div>
-              </div>
-              <div className="search-loader-dots" aria-hidden="true">
-                <span /><span /><span />
-              </div>
-            </div>
+          {/* Terminal Feed */}
+          {(loading || result || error) && (
+            <TerminalFeed
+              loading={loading}
+              data={result}
+              error={error}
+              onComplete={() => setTerminalFinished(true)}
+            />
           )}
 
           {/* Error */}
-          {error && (
-            <div className="error-box">
+          {terminalFinished && error && (
+            <div className="error-box" style={{ marginTop: '1rem' }}>
               <AlertTriangle size={18} style={{ flexShrink: 0, marginTop: '1px' }} />
               <span>{error}</span>
             </div>
           )}
 
           {/* Results Panel */}
-          {result && !loading && (
+          {terminalFinished && result && (
             <div className="results-panel" style={{ marginTop: '2rem' }}>
 
               {/* Document info */}
